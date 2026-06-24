@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Laporan Mentor</title>
+  <link rel="stylesheet" href="assets/style.css"/>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🕌</span>
+      <span>Mentoring<br><strong>Monitor</strong></span>
+    </div>
+    <nav>
+      <a href="index.html">📊 Dashboard</a>
+      <a href="laporan.html" class="active">📋 Laporan Mentor</a>
+      <a href="alert.html">🚨 Alert HRD</a>
+      <a href="admin.html">⚙️ Admin Panel</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h1>Laporan per Mentor</h1>
+      <div class="topbar-controls">
+        <select id="selBulan">
+          <option value="1">Januari</option><option value="2">Februari</option>
+          <option value="3">Maret</option><option value="4">April</option>
+          <option value="5">Mei</option><option value="6">Juni</option>
+          <option value="7">Juli</option><option value="8">Agustus</option>
+          <option value="9">September</option><option value="10">Oktober</option>
+          <option value="11">November</option><option value="12">Desember</option>
+        </select>
+        <select id="selTahun"></select>
+        <button class="btn" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="table-wrap">
+        <table id="tblLaporan">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Mentor</th>
+              <th>Kelompok</th>
+              <th>Total Mentee</th>
+              <th>Sesi Terlaksana</th>
+              <th>Responsibility</th>
+              <th>Avg Kehadiran</th>
+              <th>Kendala</th>
+              <th>Alert</th>
+              <th>Detail</th>
+            </tr>
+          </thead>
+          <tbody id="tblBody">
+            <tr><td colspan="10" class="empty">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detail -->
+  <div id="modalDetail" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modalTitle">Detail Mentor</h2>
+        <button class="btn-close" onclick="closeModal()">✕</button>
+      </div>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="assets/laporan.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Alert HRD</title>
+  <link rel="stylesheet" href="assets/style.css"/>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🕌</span>
+      <span>Mentoring<br><strong>Monitor</strong></span>
+    </div>
+    <nav>
+      <a href="index.html">📊 Dashboard</a>
+      <a href="laporan.html">📋 Laporan Mentor</a>
+      <a href="alert.html" class="active">🚨 Alert HRD</a>
+      <a href="admin.html">⚙️ Admin Panel</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h1>Alert HRD — Mentee Perlu Ditangani</h1>
+    </div>
+
+    <div class="box">
+      <p style="color:#666;margin-bottom:16px">Daftar mentee yang dilaporkan mentor membutuhkan penanganan langsung dari HRD.</p>
+      <div id="alertList">
+        <div class="empty">Memuat data...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/alert.js"></script>
+</body>
+</html>
