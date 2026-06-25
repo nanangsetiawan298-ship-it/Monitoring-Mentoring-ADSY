@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["public/**"]
+      }
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "backend/server.js" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/reminder",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}
