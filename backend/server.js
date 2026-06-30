@@ -20,6 +20,7 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../public/index.ht
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '../public/admin.html')));
 app.get('/laporan', (req, res) => res.sendFile(path.join(__dirname, '../public/laporan.html')));
 app.get('/alert', (req, res) => res.sendFile(path.join(__dirname, '../public/alert.html')));
+
 // API Routes
 app.use('/webhook', webhookRoute);
 app.use('/api/admin', adminRoute);
