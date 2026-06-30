@@ -1,8 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const SUPABASE_URL = 'https://mvtzcffzqjyracfaihmy.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_yPbLKjaRMqhQPojtiCihXA_gRjxaChO';
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+import { supabase, requireAuth, mountLogoutButton } from './auth-guard.js';
 
 const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
@@ -10,7 +6,10 @@ let currentTab = 'mentor';
 let editingId = null;
 let mentorList = [], menteeList = [], kelompokList = [], adminList = [];
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  const session = await requireAuth();
+  if (!session) return;
+  mountLogoutButton();
   loadAll();
 });
 
@@ -203,15 +202,9 @@ async function submitForm(e) {
   const type = document.getElementById('formFields').dataset.type;
   const data = Object.fromEntries(new FormData(form));
 
-  // Convert aktif string ke boolean
   if (data.aktif !== undefined) data.aktif = data.aktif === 'true';
   if (data.hari_mentoring !== undefined) data.hari_mentoring = parseInt(data.hari_mentoring);
-
-  // Normalisasi no_wa: 08xxxx -> 62xxxx
-  if (data.no_wa) {
-    data.no_wa = data.no_wa.replace(/^0/, '62');
-  }
-  // Kalau kelompok_id kosong, jadikan null biar gak error FK
+  if (data.no_wa) data.no_wa = data.no_wa.replace(/^0/, '62');
   if (data.kelompok_id === '') data.kelompok_id = null;
 
   const table = type === 'admin' ? 'admins' : type === 'kelompok' ? 'kelompok' : type + 's';
@@ -245,10 +238,6 @@ async function hapus(table, id, reloadFn) {
 }
 
 // ===== TRIGGER REMINDER =====
-// Catatan: fitur ini perlu backend (mengirim WhatsApp via API eksternal),
-// tidak bisa dilakukan langsung dari Supabase client. Endpoint di bawah
-// masih memanggil API server -- pastikan dibuat terpisah (mis. serverless
-// function) jika fitur ini ingin tetap berfungsi.
 async function triggerReminder() {
   if (!confirm('Kirim reminder manual ke semua mentor yang jadwal mentoringnya besok?')) return;
   try {
@@ -266,8 +255,6 @@ function formatWa(no) {
   return no.replace(/^62/, '0');
 }
 
-// Expose fungsi yang dipanggil lewat onclick/onsubmit di HTML
-// (wajib karena file ini type="module", sehingga scope-nya tidak global)
 window.switchTab = switchTab;
 window.openModal = openModal;
 window.closeModalForm = closeModalForm;

@@ -1,10 +1,9 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { supabase, requireAuth, mountLogoutButton } from './auth-guard.js';
 
-const SUPABASE_URL = 'https://mvtzcffzqjyracfaihmy.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_yPbLKjaRMqhQPojtiCihXA_gRjxaChO';
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  const session = await requireAuth();
+  if (!session) return;
+  mountLogoutButton();
   loadAlerts();
 });
 
