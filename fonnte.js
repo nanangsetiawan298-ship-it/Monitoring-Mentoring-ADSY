@@ -2,6 +2,10 @@ const axios = require('axios');
 require('dotenv').config();
 
 async function sendMessage(target, message) {
+  if (!process.env.FONNTE_TOKEN || !process.env.FONNTE_DEVICE) {
+    console.warn('[Fonnte] Token/Device belum dikonfigurasi, pesan tidak dikirim');
+    return null;
+  }
   try {
     const response = await axios.post(
       'https://api.fonnte.com/send',
