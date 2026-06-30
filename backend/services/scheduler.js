@@ -16,11 +16,22 @@ function startScheduler() {
 }
 
 async function sendReminders() {
-  // Cari tanggal besok
-  const besok = new Date();
+  // Cari tanggal besok, dihitung dalam timezone Asia/Jakarta (WIB)
+  // agar tidak bergeser saat server berjalan di UTC.
+  const nowJakarta = new Date(
+    new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })
+  );
+  const besok = new Date(nowJakarta);
   besok.setDate(besok.getDate() + 1);
+
   const hariBesok = besok.getDay(); // 0=Minggu, 1=Senin, ...
-  const tanggalBesok = besok.toISOString().split('T')[0]; // YYYY-MM-DD
+  const tanggalBesok = `${besok.getFullYear()}-${String(besok.getMonth() + 1).padStart(2, '0')}-${String(besok.getDate()).padStart(2, '0')}`; // YYYY-MM-DD
+
+  // Debug log — tampilkan nilai yang dihitung server agar mudah dilacak
+  console.log('[Scheduler][DEBUG] Server UTC time:', new Date().toISOString());
+  console.log('[Scheduler][DEBUG] Jakarta time now:', nowJakarta.toString());
+  console.log('[Scheduler][DEBUG] Tanggal besok (Jakarta):', tanggalBesok);
+  console.log('[Scheduler][DEBUG] hariBesok (0=Minggu...6=Sabtu):', hariBesok, '->', HARI[hariBesok]);
 
   // Ambil semua kelompok yang jadwal mentoringnya besok
   const { data: kelompoks, error } = await supabase
@@ -33,6 +44,8 @@ async function sendReminders() {
     console.error('[Scheduler] Error fetch kelompok:', error.message);
     return;
   }
+
+  console.log('[Scheduler][DEBUG] Jumlah kelompok ditemukan:', kelompoks?.length || 0);
 
   if (!kelompoks?.length) {
     console.log('[Scheduler] Tidak ada mentoring besok');
@@ -91,7 +104,7 @@ async function sendReminders() {
       `_Balas pesan ini setelah sesi selesai._`;
 
     await sendMessage(mentor.no_wa, pesan);
-    console.log(`[Scheduler] Reminder terkirim ke ${mentor.nama} (${mentor.no_wa}) - Kelompok: ${kelompok.nama}`);
+    console.log(`[Scheduler] Reminder terkirim ke ${mentor.nama} (${mentor.no_wa}) — Kelompok: ${kelompok.nama}`);
   }
 }
 
