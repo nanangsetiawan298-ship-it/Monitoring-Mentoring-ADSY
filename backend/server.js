@@ -15,13 +15,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Static frontend (untuk local dev — Vercel serve public/ otomatis)
-if (process.env.NODE_ENV !== 'production') {
+(process.env.NODE_ENV !== 'production') {
   app.use(express.static(path.join(__dirname, '../public')));
   app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../public/index.html')));
   app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '../public/admin.html')));
   app.get('/laporan', (req, res) => res.sendFile(path.join(__dirname, '../public/laporan.html')));
   app.get('/alert', (req, res) => res.sendFile(path.join(__dirname, '../public/alert.html')));
-}
 
 // API Routes
 app.use('/webhook', webhookRoute);
