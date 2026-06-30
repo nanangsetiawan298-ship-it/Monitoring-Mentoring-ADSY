@@ -1,4 +1,9 @@
-const API = '';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://mvtzcffzqjyracfaihmy.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_yPbLKjaRMqhQPojtiCihXA_gRjxaChO';
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
 let currentTab = 'mentor';
@@ -24,8 +29,9 @@ function switchTab(tab) {
 
 // ===== MENTORS =====
 async function loadMentors() {
-  const res = await fetch(`${API}/api/admin/mentors`);
-  mentorList = await res.json();
+  const { data, error } = await supabase.from('mentors').select('*').order('created_at', { ascending: true });
+  if (error) { console.error('loadMentors error:', error); return; }
+  mentorList = data;
   const tbody = document.getElementById('mentorBody');
   if (!mentorList.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">Belum ada mentor</td></tr>'; return; }
   tbody.innerHTML = mentorList.map((m, i) => `
@@ -42,8 +48,12 @@ async function loadMentors() {
 
 // ===== MENTEES =====
 async function loadMentees() {
-  const res = await fetch(`${API}/api/admin/mentees`);
-  menteeList = await res.json();
+  const { data, error } = await supabase
+    .from('mentees')
+    .select('*, kelompok:kelompok_id(nama)')
+    .order('created_at', { ascending: true });
+  if (error) { console.error('loadMentees error:', error); return; }
+  menteeList = data;
   renderMenteeTable(menteeList);
 }
 
@@ -70,8 +80,12 @@ function filterMentee() {
 
 // ===== KELOMPOK =====
 async function loadKelompok() {
-  const res = await fetch(`${API}/api/admin/kelompok`);
-  kelompokList = await res.json();
+  const { data, error } = await supabase
+    .from('kelompok')
+    .select('*, mentor:mentor_id(id, nama), mentees(id)')
+    .order('created_at', { ascending: true });
+  if (error) { console.error('loadKelompok error:', error); return; }
+  kelompokList = data;
   const tbody = document.getElementById('kelompokBody');
   if (!kelompokList.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Belum ada kelompok</td></tr>'; return; }
   tbody.innerHTML = kelompokList.map((k, i) => `
@@ -91,8 +105,9 @@ async function loadKelompok() {
 
 // ===== ADMINS =====
 async function loadAdmins() {
-  const res = await fetch(`${API}/api/admin/admins`);
-  adminList = await res.json();
+  const { data, error } = await supabase.from('admins').select('*').order('created_at', { ascending: true });
+  if (error) { console.error('loadAdmins error:', error); return; }
+  adminList = data;
   const tbody = document.getElementById('adminBody');
   if (!adminList.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">Belum ada admin</td></tr>'; return; }
   tbody.innerHTML = adminList.map((a, i) => `
@@ -192,14 +207,27 @@ async function submitForm(e) {
   if (data.aktif !== undefined) data.aktif = data.aktif === 'true';
   if (data.hari_mentoring !== undefined) data.hari_mentoring = parseInt(data.hari_mentoring);
 
-  const endpoint = type === 'admin' ? 'admins' : type === 'kelompok' ? 'kelompok' : type + 's';
-  const url = editingId ? `${API}/api/admin/${endpoint}/${editingId}` : `${API}/api/admin/${endpoint}`;
-  const method = editingId ? 'PUT' : 'POST';
+  // Normalisasi no_wa: 08xxxx -> 62xxxx
+  if (data.no_wa) {
+    data.no_wa = data.no_wa.replace(/^0/, '62');
+  }
+  // Kalau kelompok_id kosong, jadikan null biar gak error FK
+  if (data.kelompok_id === '') data.kelompok_id = null;
 
-  const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-  const result = await res.json();
+  const table = type === 'admin' ? 'admins' : type === 'kelompok' ? 'kelompok' : type + 's';
 
-  if (result.error) { alert('Error: ' + result.error); return; }
+  let result;
+  if (editingId) {
+    result = await supabase.from(table).update(data).eq('id', editingId).select();
+  } else {
+    result = await supabase.from(table).insert(data).select();
+  }
+
+  if (result.error) {
+    console.error('submitForm error:', result.error);
+    alert('Error: ' + result.error.message);
+    return;
+  }
 
   closeModalForm();
   if (type === 'mentor') loadMentors();
@@ -209,20 +237,27 @@ async function submitForm(e) {
 }
 
 // ===== HAPUS =====
-async function hapus(endpoint, id, reloadFn) {
+async function hapus(table, id, reloadFn) {
   if (!confirm('Yakin ingin menghapus data ini?')) return;
-  const res = await fetch(`${API}/api/admin/${endpoint}/${id}`, { method: 'DELETE' });
-  const result = await res.json();
-  if (result.error) { alert('Error: ' + result.error); return; }
+  const { error } = await supabase.from(table).delete().eq('id', id);
+  if (error) { console.error('hapus error:', error); alert('Error: ' + error.message); return; }
   reloadFn();
 }
 
 // ===== TRIGGER REMINDER =====
+// Catatan: fitur ini perlu backend (mengirim WhatsApp via API eksternal),
+// tidak bisa dilakukan langsung dari Supabase client. Endpoint di bawah
+// masih memanggil API server -- pastikan dibuat terpisah (mis. serverless
+// function) jika fitur ini ingin tetap berfungsi.
 async function triggerReminder() {
   if (!confirm('Kirim reminder manual ke semua mentor yang jadwal mentoringnya besok?')) return;
-  const res = await fetch(`${API}/api/admin/trigger-reminder`, { method: 'POST' });
-  const result = await res.json();
-  alert(result.success ? 'Reminder berhasil dikirim!' : 'Gagal: ' + result.error);
+  try {
+    const res = await fetch('/api/admin/trigger-reminder', { method: 'POST' });
+    const result = await res.json();
+    alert(result.success ? 'Reminder berhasil dikirim!' : 'Gagal: ' + result.error);
+  } catch (err) {
+    alert('Fitur reminder belum tersedia (backend belum dibuat).');
+  }
 }
 
 // ===== UTILS =====
@@ -230,3 +265,13 @@ function formatWa(no) {
   if (!no) return '<span style="color:#9ca3af">-</span>';
   return no.replace(/^62/, '0');
 }
+
+// Expose fungsi yang dipanggil lewat onclick/onsubmit di HTML
+// (wajib karena file ini type="module", sehingga scope-nya tidak global)
+window.switchTab = switchTab;
+window.openModal = openModal;
+window.closeModalForm = closeModalForm;
+window.submitForm = submitForm;
+window.hapus = hapus;
+window.triggerReminder = triggerReminder;
+window.filterMentee = filterMentee;
