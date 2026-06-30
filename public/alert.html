@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Alert HRD</title>
+  <link rel="stylesheet" href="assets/style.css"/>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🕌</span>
+      <span>Mentoring<br><strong>Monitor</strong></span>
+    </div>
+    <nav>
+      <a href="index.html">📊 Dashboard</a>
+      <a href="laporan.html">📋 Laporan Mentor</a>
+      <a href="alert.html" class="active">🚨 Alert HRD</a>
+      <a href="admin.html">⚙️ Admin Panel</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h1>Alert HRD</h1>
+    </div>
+
+    <div class="box">
+      <div class="box-header">
+        <h2>Mentee Perlu Perhatian</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tanggal Sesi</th>
+              <th>Kelompok</th>
+              <th>Mentor</th>
+              <th>Kehadiran</th>
+              <th>Kondisi</th>
+              <th>Kendala</th>
+            </tr>
+          </thead>
+          <tbody id="alertBody">
+            <tr><td colspan="6" class="empty">Memuat...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="assets/alert.js"></script>
+</body>
+</html>
